@@ -20,7 +20,7 @@ class HttpClient {
         this.numberOfOngoingRequests = 0;
 
         this.options = {
-            agent: new Agent({ keepAlive: true, keepAliveMsecs: 10000, maxSockets: MAX_CONCURRENCY }),
+            agent: new Agent({ keepAlive: true, keepAliveMsecs: 10000, maxSockets: maxConcurrency }),
             encoding: null,
         }
     }

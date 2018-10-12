@@ -1,11 +1,12 @@
 
 const
+    chalk = require("chalk"),
     db = require("./db"),
     Throttler = require("./throttler"),
     DicioComBr = require("./bots/dicio-com-br");
 
 const
-    REPORT_PERIOD_IN_MILLIS = 5000,
+    REPORT_PERIOD_IN_MILLIS = 1000,
     MAX_CONCURRENCY = 15,
     NUMBER_OF_REQUESTS_TO_MAKE = 1000;
 
@@ -20,13 +21,21 @@ class Crawler {
         this.throttler = new Throttler(MAX_CONCURRENCY, NUMBER_OF_REQUESTS_TO_MAKE);
         this.throttler.onDrain(this.close.bind(this));
         this.throttler.onMaxRunsReached(this.close.bind(this));
+        this.previousTotalTasks = 0;
 
         this.crawler = new DicioComBr(MAX_CONCURRENCY);
         this.reportIntervalTimer = setInterval(this.reportMetrics.bind(this), REPORT_PERIOD_IN_MILLIS);
     }
 
     reportMetrics() {
-        console.info(`Metrics> current-requests:${this.crawler.getNumberOfOngoingRequests()}`);
+        const metrics = [];
+        metrics.push(`current-requests:${this.crawler.getNumberOfOngoingRequests()}`);
+        metrics.push(`open:${this.openUrls.size}`);
+        metrics.push(`visited:${this.visitedUrls.size}`);
+        metrics.push(`total-completed-requests:${this.throttler.totalTasks}`);
+        metrics.push(`completed-requests-last-period:${this.throttler.totalTasks - this.previousTotalTasks}`);
+        this.previousTotalTasks = this.throttler.totalTasks;
+        console.info(chalk.yellow(`Metrics> ${metrics.join(" ")}`));
     }
 
     async getOpenUrls() {
@@ -35,10 +44,19 @@ class Crawler {
 
         if (urlQueue.length === 0) {
             // list of words to start from
-            urlQueue.push("/cadeira/", "/mesa/", "/carro/", "/macaco/", "/pessoa/", "/livro/", "/computador/");
+            urlQueue.push("/almoco/");  // ToDo replace with call to endpoint to fetch random word
         }
 
         this.openUrls = new Set(urlQueue);
+
+        // make sure visited URLs do not appear among open ones
+        let removedCount = 0;
+        for (const url of this.visitedUrls.values()) {
+            if (this.openUrls.delete(url)) removedCount++;
+        }
+        if (removedCount > 0) {
+            console.info(`Removed ${removedCount} URLs from open set that were already visited.`);
+        }
     }
 
     /**
@@ -46,7 +64,6 @@ class Crawler {
      * @returns {Promise<void>}
      */
     async doUrl(url) {
-        console.info(url);
         const {word, definition, urls} = await this.crawler.fetchWordUrl(url);
         this.visitedUrls.add(url);
         this.openUrls.delete(url);
@@ -67,7 +84,6 @@ class Crawler {
 
         this.visitedUrls = new Set(await db.getVisitedUrls());
         await this.getOpenUrls();
-        await db.removeAllOpenUrls();
 
         for (const url of this.openUrls.values()) {
             this.throttler.offer(this.doUrl.bind(this, url));
@@ -75,10 +91,13 @@ class Crawler {
     }
 
     async close() {
-        console.info("Closing crawler...");
+        clearInterval(this.reportIntervalTimer);
+        console.info("Persisting open URLs... " + chalk.red("WAIT! This can take a while."));
+        // remove all old open urls
+        await db.removeAllOpenUrls();
+        // introduce new ones
         await db.addOpenUrls([...this.openUrls.values()]);  // save URLs still to visit
         await db.close();
-        clearInterval(this.reportIntervalTimer);
         console.info("Done.");
     }
 }
