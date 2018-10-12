@@ -8,10 +8,13 @@ const BASE_URL = "https://www.dicio.com.br";
 
 class DicioComBr {
 
-    constructor () {
+    /**
+     * @param {Number} maxConcurrency
+     */
+    constructor (maxConcurrency) {
         /** @type {Function[]} */
         this.pendingRequests = [];
-        this.httpClient = new HttpClient(true, "ISO-8859-1");
+        this.httpClient = new HttpClient(true, maxConcurrency, "ISO-8859-1");
     }
 
     getNumberOfOngoingRequests() {

@@ -4,6 +4,10 @@ const
     Throttler = require("./throttler"),
     DicioComBr = require("./bots/dicio-com-br");
 
+const
+    REPORT_PERIOD_IN_MILLIS = 5000,
+    MAX_CONCURRENCY = 15,
+    NUMBER_OF_REQUESTS_TO_MAKE = 1000;
 
 class Crawler {
 
@@ -13,12 +17,12 @@ class Crawler {
         /** @type {Set<String>} */
         this.openUrls = new Set();
 
-        this.throttler = new Throttler(15, 1000);
+        this.throttler = new Throttler(MAX_CONCURRENCY, NUMBER_OF_REQUESTS_TO_MAKE);
         this.throttler.onDrain(this.close.bind(this));
         this.throttler.onMaxRunsReached(this.close.bind(this));
 
-        this.crawler = new DicioComBr();
-        this.reportIntervalTimer = setInterval(this.reportMetrics.bind(this), 5000);
+        this.crawler = new DicioComBr(MAX_CONCURRENCY);
+        this.reportIntervalTimer = setInterval(this.reportMetrics.bind(this), REPORT_PERIOD_IN_MILLIS);
     }
 
     reportMetrics() {

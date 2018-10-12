@@ -5,19 +5,18 @@ const
     http = require("http"),
     https = require("https");
 
-const MAX_CONCURRENCY = 15;
-
 class HttpClient {
 
     /**
      * @param {Boolean} isHttps
+     * @param {Number} maxConcurrency
      * @param {String} pageEncoding
      */
-    constructor (isHttps, pageEncoding = "utf-8") {
+    constructor (isHttps, maxConcurrency, pageEncoding = "utf-8") {
         const Agent = (isHttps ? https : http).Agent;
         this.pageEncoding = pageEncoding;
 
-        this.maximumConcurrentRequests = MAX_CONCURRENCY;
+        this.maximumConcurrentRequests = maxConcurrency;
         this.numberOfOngoingRequests = 0;
 
         this.options = {
