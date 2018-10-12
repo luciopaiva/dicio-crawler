@@ -29,13 +29,13 @@ class Crawler {
 
     reportMetrics() {
         const metrics = [];
-        metrics.push(`current-requests:${this.crawler.getNumberOfOngoingRequests()}`);
-        metrics.push(`open:${this.openUrls.size}`);
-        metrics.push(`visited:${this.visitedUrls.size}`);
-        metrics.push(`total-completed-requests:${this.throttler.totalTasks}`);
-        metrics.push(`completed-requests-last-period:${this.throttler.totalTasks - this.previousTotalTasks}`);
+        metrics.push(`current-requests:${chalk.green(this.crawler.getNumberOfOngoingRequests())}`);
+        metrics.push(`open:${chalk.green(this.openUrls.size)}`);
+        metrics.push(`visited:${chalk.green(this.visitedUrls.size)}`);
+        metrics.push(`total-completed-requests:${chalk.green(this.throttler.totalTasks)}`);
+        metrics.push(`completed-requests-last-period:${chalk.green(this.throttler.totalTasks - this.previousTotalTasks)}`);
         this.previousTotalTasks = this.throttler.totalTasks;
-        console.info(chalk.yellow(`Metrics> ${metrics.join(" ")}`));
+        console.info(`Metrics> ${metrics.map(metric => chalk.yellow(metric)).join(" ")}`);
     }
 
     async getOpenUrls() {
