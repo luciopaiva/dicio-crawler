@@ -7,7 +7,7 @@ const
 
 const
     REPORT_PERIOD_IN_MILLIS = 1000,
-    MAX_CONCURRENCY = 15,
+    MAX_CONCURRENCY = 25,
     NUMBER_OF_REQUESTS_TO_MAKE = 1000;
 
 class Crawler {
