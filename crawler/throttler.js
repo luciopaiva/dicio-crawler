@@ -1,7 +1,7 @@
 
 class Throttler {
 
-    constructor (maxConcurrentTasks, maxTotalTasks) {
+    constructor (maxConcurrentTasks, maxTotalTasks = 0) {
         this.maxConcurrentTasks = maxConcurrentTasks;
         this.maxTotalTasks = maxTotalTasks;
         this.drainListeners = [];
@@ -22,7 +22,7 @@ class Throttler {
             return false;
         }
 
-        if (this.totalTasks >= this.maxTotalTasks) {
+        if (this.maxTotalTasks > 0 && this.totalTasks >= this.maxTotalTasks) {
             // max runs reached; call listeners
             for (const listener of this.maxRunsReachedListeners) {
                 listener();

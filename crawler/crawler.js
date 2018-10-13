@@ -6,11 +6,11 @@ const
     DicioComBr = require("./bots/dicio-com-br");
 
 const
-    MAX_OPEN_URLS_TO_KEEP_IN_DB = 10000,
+    MAX_OPEN_URLS_TO_KEEP_IN_DB = 50000,
     MAX_OPEN_URLS_TO_KEEP_IN_MEMORY = 100000,
     REPORT_PERIOD_IN_MILLIS = 1000,
     MAX_CONCURRENCY = 25,
-    NUMBER_OF_REQUESTS_TO_MAKE = 1000;
+    NUMBER_OF_REQUESTS_TO_MAKE = 0;  // zero disables the limit
 
 class Crawler {
 
@@ -31,9 +31,9 @@ class Crawler {
 
     reportMetrics() {
         const metrics = [];
-        metrics.push(`current-requests:${chalk.green(this.crawler.getNumberOfOngoingRequests())}`);
-        metrics.push(`open:${chalk.green(this.openUrls.size)}`);
-        metrics.push(`visited:${chalk.green(this.visitedUrls.size)}`);
+        metrics.push(`ongoing-requests:${chalk.green(this.crawler.getNumberOfOngoingRequests())}`);
+        metrics.push(`open-urls:${chalk.green(this.openUrls.size)}`);
+        metrics.push(`known-words:${chalk.green(this.visitedUrls.size)}`);
         metrics.push(`total-completed-requests:${chalk.green(this.throttler.totalTasks)}`);
         metrics.push(`completed-requests-last-period:${chalk.green(this.throttler.totalTasks - this.previousTotalTasks)}`);
         this.previousTotalTasks = this.throttler.totalTasks;
