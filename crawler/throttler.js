@@ -9,9 +9,19 @@ class Throttler {
         this.ongoingTasks = 0;
         this.totalTasks = 0;
         this.queue = [];
+        this.isActive = true;
+    }
+
+    close() {
+        // won't cancel ongoing requests, but new ones won't be allowed
+        this.isActive = false;
     }
 
     async offer(task) {
+        if (!this.isActive) {
+            return false;
+        }
+
         if (this.totalTasks >= this.maxTotalTasks) {
             // max runs reached; call listeners
             for (const listener of this.maxRunsReachedListeners) {

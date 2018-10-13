@@ -6,6 +6,8 @@ const
     DicioComBr = require("./bots/dicio-com-br");
 
 const
+    MAX_OPEN_URLS_TO_KEEP_IN_DB = 10000,
+    MAX_OPEN_URLS_TO_KEEP_IN_MEMORY = 100000,
     REPORT_PERIOD_IN_MILLIS = 1000,
     MAX_CONCURRENCY = 25,
     NUMBER_OF_REQUESTS_TO_MAKE = 1000;
@@ -70,7 +72,7 @@ class Crawler {
         await db.addWord(word, definition, url);
 
         for (const url of urls) {
-            if (!this.openUrls.has(url) && !this.visitedUrls.has(url)) {
+            if (!this.openUrls.has(url) && !this.visitedUrls.has(url) && this.openUrls.size < MAX_OPEN_URLS_TO_KEEP_IN_MEMORY) {
                 this.openUrls.add(url);
                 this.throttler.offer(this.doUrl.bind(this, url));
             }
@@ -91,15 +93,20 @@ class Crawler {
     }
 
     async close() {
+        this.throttler.close();
         clearInterval(this.reportIntervalTimer);
         console.info("Persisting open URLs... " + chalk.red("WAIT! This can take a while."));
         // remove all old open urls
         await db.removeAllOpenUrls();
-        // introduce new ones
-        await db.addOpenUrls([...this.openUrls.values()]);  // save URLs still to visit
+        // introduce new ones. We're not saving all of them here since it would take forever to save all of them as the crawler database grows
+        await db.addOpenUrls([...this.openUrls.values()].slice(0, MAX_OPEN_URLS_TO_KEEP_IN_DB));  // save URLs still to visit
         await db.close();
         console.info("Done.");
     }
 }
 
-(new Crawler()).run();
+(() => {
+    const app = new Crawler();
+    app.run();
+    process.on("SIGINT", () => app.close());
+})();
