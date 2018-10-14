@@ -3,6 +3,8 @@
 
 An experimental crawler for dicio.com.br. Makes throttled, concurrent requests and saves results to local sqlite database.
 
+Hint: if you just want to grab the dictionary for offline use, simply download Dicio's [mobile app](https://play.google.com/store/apps/details?id=com.setegraus.dicio).
+
 ## License
 
 You should use this only for educational purposes. Please see `LICENSE.md`. I am not involved with `dicio.com.br` in any way, so run it at your own risk.
