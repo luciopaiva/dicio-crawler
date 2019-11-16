@@ -1,5 +1,5 @@
 
-# Dicionario
+# dicio.com.br crawler
 
 An experimental crawler for dicio.com.br. Makes throttled, concurrent requests and saves results to local sqlite database.
 
@@ -11,7 +11,7 @@ You should use this only for educational purposes. Please see `LICENSE.md`. I am
 
 ## How to install and run the crawler
 
-    nvm use
+    nvm install
     npm install
 
 ## How the crawler works
